@@ -57,10 +57,10 @@ public class Employee implements Serializable {
     }
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Employee employee)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
+        Employee employee = (Employee) o;
         return id.equals(employee.id);
     }
 

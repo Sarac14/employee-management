@@ -20,12 +20,25 @@ public class EmployeeManager {
     }
 
     public void addEmployee(Employee employee) {
+        double minAllowed = employee.getPosition().getMinSalary() * 0.9;
+
+        for (Employee existing : employees) {
+            if (existing.getId().equals(employee.getId()) || existing.getName().equals(employee.getName())) {
+                throw new DuplicateEmployeeException("Duplicate employee by ID or name");
+            }
+        }
+
         if (employees.contains(employee)) {
             throw new DuplicateEmployeeException("Duplicate employee");
         }
         if (!isSalaryValidForPosition(employee.getPosition(), employee.getSalary())) {
             throw new InvalidSalaryException("Invalid salary for position");
         }
+
+        if (employee.getSalary() < minAllowed) {
+            throw new InvalidSalaryException("Salary is below 10% threshold of minimum salary");
+        }
+
         employees.add(employee);
     }
 
@@ -62,13 +75,25 @@ public class EmployeeManager {
         if (!employees.contains(employee)) {
             throw new EmployeeNotFoundException("Employee not found");
         }
-        if (!isSalaryValidForPosition(newPosition, employee.getSalary())) {
-            throw new InvalidSalaryException("Current salary is not within the range for the new position");
+        double salary = employee.getSalary();
+        double min = newPosition.getMinSalary();
+        double max = newPosition.getMaxSalary();
+
+        if (salary >= min && salary <= max) {
+            employee.setPosition(newPosition);
+        } else if (salary >= min * 0.9 && salary < min) {
+            employee.setSalary(min);
+            employee.setPosition(newPosition);
+        } else {
+            throw new InvalidSalaryException("Salary is invalid for new position");
         }
-        employee.setPosition(newPosition);
     }
 
     public boolean isSalaryValidForPosition(Position position, double salary) {
+        if (position == null || salary < 0) {
+            return false;
+        }
         return salary >= position.getMinSalary() && salary <= position.getMaxSalary();
     }
+
 }
